@@ -345,6 +345,7 @@ const UpdateForm = ({
           <>
             <BoardShowcase projectFullname={projectFullname} />
             <BoardExtraMenus
+              projectFullname={projectFullname}
               hasInteractiveBom={hasInteractiveBom}
               zipUrl={zipUrl}
             />
