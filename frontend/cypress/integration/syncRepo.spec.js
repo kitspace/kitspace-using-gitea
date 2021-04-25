@@ -8,15 +8,9 @@ describe('Syncing a project behavior validation', () => {
   const syncedRepoUrl = 'https://github.com/AbdulrhmnGhanem/light-test-repo'
   const repoName = 'light-test-repo'
 
-  before(() => {
-    // visit home before running the tests, instead of using `wait`.
-    cy.visit('/')
-  })
-
-  
   it('should sync a repo on gitea', () => {
     cy.clearCookies()
-    cy.intercept('http://gitea.kitspace.test:3000/user/kitspace/**').as('sign_in')
+    cy.intercept('http://gitea.kitspace.test:3000/user/kitspace/**')
 
     cy.createUser(username, email, password)
     cy.visit('/login')
