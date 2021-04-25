@@ -39,7 +39,6 @@ import InfoBar from '@components/Board/InfoBar'
 import Readme from '@components/Board/Readme'
 import UploadModal from '@components/UploadModal'
 
-
 export const getServerSideProps = async ({ params, query, req }) => {
   const processorUrl = process.env.KITSPACE_PROCESSOR_URL
   const repoFullname = `${params.username}/${params.projectName}`
@@ -330,7 +329,7 @@ const UpdateForm = ({
         description={description}
       />
       <div>
-        <UploadModal files={allFiles} activeTab='PCB' canUpload={canUpload} />
+        <UploadModal files={allFiles} activeTab="PCB" canUpload={canUpload} />
         {boardAssetsExist ? (
           <>
             <BoardShowcase projectFullname={projectFullname} />
@@ -345,7 +344,7 @@ const UpdateForm = ({
         )}
       </div>
       <div>
-        <UploadModal files={allFiles} activeTab='BOM' canUpload={canUpload} />
+        <UploadModal files={allFiles} activeTab="BOM" canUpload={canUpload} />
         {boardAssetsExist ? (
           <>
             <OrderPCBs zipUrl={zipUrl} boardSpecs={boardSpecs} />
@@ -360,7 +359,7 @@ const UpdateForm = ({
         )}
       </div>
       <div>
-        <UploadModal files={allFiles} activeTab='README' canUpload={canUpload} />
+        <UploadModal files={allFiles} activeTab="README" canUpload={canUpload} />
         {readmeExists ? (
           <Readme renderedReadme={renderedReadme} />
         ) : (
