@@ -58,6 +58,7 @@ describe('Log in form submission', () => {
     // deauthenticate the user and reload the page to update the CSRF token
     cy.clearCookies()
     cy.reload()
+    cy.wait(1000)
 
     cy.intercept('http://gitea.kitspace.test:3000/user/kitspace/**')
   })
