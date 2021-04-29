@@ -32,6 +32,9 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Login to ghcr.io
+        env:
+          CR_PAT: ${{ secrets.CR_PAT  }}
+        if: env.CR_PAT != null
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
@@ -40,38 +43,44 @@ jobs:
 
       # to avoid being rate-limited on pulls
       - name: Login to hub.docker.com
+        env:
+          DOCKER_HUB_PAT: ${{ secrets.DOCKER_HUB_PAT  }}
+        if: env.DOCKER_HUB_PAT != null
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_PAT }}
         continue-on-error: true
 
-      - name: Build and push frontend
+      - name: Build frontend
         uses: docker/build-push-action@v2
         with:
           context: ./frontend
           file: ./frontend/Dockerfile.prod
-          push: true
+          # push if allowed to
+          push: ${{ secrets.CR_PAT != null }}
           tags: ghcr.io/kitspace/frontend:${{ steps.sha.outputs.sha_short }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
-      - name: Build and push processor
+      - name: Build processor
         uses: docker/build-push-action@v2
         with:
           context: ./processor
           file: ./processor/Dockerfile
-          push: true
+          # push if allowed to
+          push: ${{ secrets.CR_PAT != null }}
           tags: ghcr.io/kitspace/processor:${{ steps.sha.outputs.sha_short }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
-      - name: Build and push nginx
+      - name: Build nginx
         uses: docker/build-push-action@v2
         with:
           context: ./nginx
           file: ./nginx/Dockerfile
-          push: true
+          # push if allowed to
+          push: ${{ secrets.CR_PAT != null }}
           tags: ghcr.io/kitspace/nginx:${{ steps.sha.outputs.sha_short }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
@@ -81,7 +90,7 @@ jobs:
         run: docker pull ghcr.io/kitspace/gitea:${{ steps.sha.outputs.gitea_sha_short }}
         continue-on-error: true
 
-      - name: Build and push gitea
+      - name: Build gitea
         # If the previous step failed, i.e., there's no image tagged
         # gitea:${{gitea_sha_short}} in ghcr, build image and push it
         if: ${{ failure() }}
@@ -89,7 +98,8 @@ jobs:
         with:
           context: ./gitea
           file: ./gitea/Dockerfile
-          push: true
+          # push if allowed to
+          push: ${{ secrets.CR_PAT != null }}
           tags: ghcr.io/kitspace/gitea:${{ steps.sha.outputs.gitea_sha_short }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
@@ -121,6 +131,9 @@ jobs:
         run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
 
       - name: Login to ghcr.io
+        env:
+          CR_PAT: ${{ secrets.CR_PAT  }}
+        if: env.CR_PAT != null
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
@@ -132,6 +145,9 @@ jobs:
 
       # to avoid being rate-limited on pulls
       - name: Login to hub.docker.com
+        env:
+          DOCKER_HUB_PAT: ${{ secrets.DOCKER_HUB_PAT  }}
+        if: env.DOCKER_HUB_PAT != null
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
