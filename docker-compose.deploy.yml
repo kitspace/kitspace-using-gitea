@@ -10,15 +10,16 @@ services:
     restart: always
 
   postgres:
+    image: ghcr.io/kitspace/postgres${POSTGRES_DEPLOY_IMAGE_TAG}
     restart: always
 
   nginx:
-    image: ghcr.io/kitspace/nginx${PROCESSOR_DEPLOY_IMAGE_TAG}
+    image: ghcr.io/kitspace/nginx${NGINX_DEPLOY_IMAGE_TAG}
     ports:
       - 443:443
     environment:
       - RUN_CERTBOT=${CERTBOT_ENABLED}
-      - CERTBOT_DOMAINS=${KITSPACE_DOMAIN},gitea.${KITSPACE_DOMAIN},processor.${KITSPACE_DOMAIN}
+      - CERTBOT_DOMAINS=${KITSPACE_DOMAIN},gitea.${KITSPACE_DOMAIN},processor.${KITSPACE_DOMAIN},orders.${KITSPACE_DOMAIN}
       - CERTBOT_EMAIL=${CERTBOT_EMAIL}
     restart: always
     volumes:
@@ -28,3 +29,6 @@ services:
     image: ghcr.io/kitspace/processor${PROCESSOR_DEPLOY_IMAGE_TAG}
     restart: always
 
+  orders:
+    image: ghcr.io/kitspace/orders${ORDERS_DEPLOY_IMAGE_TAG}
+    restart: always

@@ -22,9 +22,10 @@ services:
       - SECRET_KEY=${GITEA_SECRET_KEY}
       - DB_TYPE=postgres
       - DB_HOST=postgres:5432
-      - DB_NAME=gitea
+      - DB_NAME=kitspace
       - DB_USER=gitea
-      - DB_PASSWD=${POSTGRES_PASSWORD}
+      - DB_PASSWD=${GITEA_POSTGRES_PASSWORD}
+      - GITEA__DATABASE__SCHEMA=gitea
     volumes:
       - gitea-data:/data
       - /etc/timezone:/etc/timezone:ro
@@ -33,11 +34,13 @@ services:
       - postgres
 
   postgres:
-    image: postgres:12.2
+    ports:
+      - '5432:5432'
     environment:
-      - POSTGRES_USER=gitea
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=gitea
+      - GITEA_POSTGRES_PASSWORD=${GITEA_POSTGRES_PASSWORD}
+      - ORDERS_POSTGRES_PASSWORD=${ORDERS_POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD=${POSTGRES_ROOT_PASSWORD}
+      - POSTGRES_DB=kitspace
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
@@ -65,6 +68,13 @@ services:
     volumes:
       - gitea-data:/gitea-data
       - processor-data:/data
+
+  orders:
+    environment:
+      - 'KITSPACE_GITEA_URL=${KITSPACE_SCHEME}://gitea.${KITSPACE_DOMAIN}${KITSPACE_EXTERNAL_PORT}'
+      - 'ALLOWED_CORS_DOMAINS=${KITSPACE_SCHEME}://${KITSPACE_DOMAIN}${KITSPACE_EXTERNAL_PORT}'
+    depends_on:
+      - gitea
 
 volumes:
   frontend-next:

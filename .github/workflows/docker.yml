@@ -76,6 +76,36 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
+      - name: Build and push orders service
+        uses: docker/build-push-action@v2
+        with:
+          context: ./orders
+          file: ./orders/Dockerfile
+          push: true
+          tags: ghcr.io/kitspace/orders:${{ steps.sha.outputs.sha_short }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      - name: Build and push postgres
+        uses: docker/build-push-action@v2
+        with:
+          context: ./postgres
+          file: ./postgres/Dockerfile
+          push: true
+          tags: ghcr.io/kitspace/postgres:${{ steps.sha.outputs.sha_short }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      - name: Build and push postgres
+        uses: docker/build-push-action@v2
+        with:
+          context: ./postgres
+          file: ./postgres/Dockerfile
+          push: true
+          tags: ghcr.io/kitspace/postgres:${{ steps.sha.outputs.sha_short }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
       - name: Pull gitea image
         shell: bash
         run: docker pull ghcr.io/kitspace/gitea:${{ steps.sha.outputs.gitea_sha_short }}
@@ -128,16 +158,6 @@ jobs:
         id: branch
         run: echo ::set-output name=short_ref::${GITHUB_REF#refs/*/}
 
-      - name: Login to ghcr.io
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.CR_PAT }}
-        # we don't really need to log in to pull the images, just doing it in
-        # case an image is accidentally set to private
-        continue-on-error: true
-
       # to avoid being rate-limited on pulls
       - name: Login to hub.docker.com
         uses: docker/login-action@v1
@@ -166,6 +186,8 @@ jobs:
           FRONTEND_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
           PROCESSOR_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
           NGINX_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
+          ORDERS_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
+          POSTGRES_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
           GITEA_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.gitea_sha_short }}'
         with:
           remote_docker_host: deploy@${{ steps.branch.outputs.short_ref }}.staging.kitspace.org
@@ -215,6 +237,8 @@ jobs:
           FRONTEND_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
           PROCESSOR_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
           NGINX_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
+          ORDERS_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
+          POSTGRES_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
           GITEA_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.gitea_sha_short }}'
         run: |
           scripts/install_gitea.sh
@@ -233,6 +257,8 @@ jobs:
           FRONTEND_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
           PROCESSOR_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
           NGINX_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
+          ORDERS_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
+          POSTGRES_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.sha_short }}'
           GITEA_DEPLOY_IMAGE_TAG: ':${{ steps.sha.outputs.gitea_sha_short }}'
         with:
           start: docker-compose -f ../docker-compose.yml -f ../docker-compose.deploy.yml up
