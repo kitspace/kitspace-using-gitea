@@ -21,6 +21,8 @@ describe('Syncing a project behavior validation', () => {
     cy.visit('/login')
     cy.signIn(username, password)
     cy.wait('@sign_in')
+    
+    cy.visit('/projects/new')
 
     cy.visit('/projects/new')
 
