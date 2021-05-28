@@ -257,8 +257,14 @@ const UpdateForm = ({
   }
 
   const onDrop = async files => {
-    // Commit files directly to gitea server on drop
-    const UUIDs = await uploadFilesToGiteaServer(projectFullname, files, csrf)
+    const filePaths = files.map(file => file.path)
+    // Upload files to gitea server on drop
+    const UUIDs = await uploadFilesToGiteaServer(
+      projectFullname,
+      files,
+      filePaths,
+      csrf,
+    )
 
     setNewlyUploadedDetails(files)
     setNewlyUploadedUUIDs([...newlyUploadedUUIDs, UUIDs])
