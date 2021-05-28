@@ -3,6 +3,7 @@ import { Button, Icon, Image, Menu, Popup } from 'semantic-ui-react'
 import { useRouter } from 'next/router'
 
 import { AuthContext } from '@contexts/AuthContext'
+import { UserMenu } from './UserMenu'
 import styles from './NavBar.module.scss'
 
 const logoSrc = '/static/logo.svg'
@@ -166,7 +167,6 @@ function ContactMenu() {
       }
       on="click"
       position="bottom right"
-      color="blue"
     >
       <Menu secondary vertical>
         <SocialMenuItems />
@@ -181,7 +181,11 @@ function SigningButton() {
   const { isAuthenticated } = useContext(AuthContext)
   const isLoginRoute = pathname === '/login'
 
-  return isAuthenticated ? <LogoutButton /> : isLoginRoute ? null : <LoginButton />
+  return isAuthenticated ? (
+    <UserMenuButton />
+  ) : isLoginRoute ? null : (
+    <LoginButton />
+  )
 }
 
 function LoginButton() {
@@ -200,32 +204,28 @@ function LoginButton() {
   )
 }
 
-function LogoutButton() {
-  const router = useRouter()
-  const { csrf } = useContext(AuthContext)
-
-  const onClick = async () => {
-    const endpoint = `${process.env.KITSPACE_GITEA_URL}/user/logout`
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-      },
-      body: `_csrf=${csrf}`,
-      credentials: 'include',
-    })
-
-    if (response.ok) {
-      await router.push('/login')
-      router.reload()
-    }
-  }
+function UserMenuButton() {
+  const { user } = useContext(AuthContext)
   return (
-    <Menu.Item>
-      <Button id="logout" color="red" onClick={onClick}>
-        Log out
-      </Button>
-    </Menu.Item>
+    <Popup
+      trigger={
+        <a className={styles.userButtonMenuItem}>
+          <div className={styles.userDropContainer}>
+            <Image
+              style={{ background: 'white' }}
+              size="mini"
+              rounded
+              src={user.avatar_url}
+            />
+            <Icon inverted name="triangle down" />
+          </div>
+        </a>
+      }
+      position="bottom right"
+      on="click"
+    >
+      <UserMenu userName={user.username} />
+    </Popup>
   )
 }
 
