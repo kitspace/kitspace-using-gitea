@@ -33,24 +33,31 @@ export const getServerSideProps = async ({ params, query, req }) => {
   )
 
   if (await repoExists(repoFullname)) {
-    const repo = await getRepo(repoFullname)
-    const repoFiles = await getDefaultBranchFiles(repoFullname)
-
-    const [gerberInfoExists, gerberInfo] = await getBoardGerberInfo(assetsPath)
-    const [boardBomInfoExists, boardBomInfo] = await getBoardBomInfo(assetsPath)
-    const [kitspaceYAMLExists, kitspaceYAML] = await getKitspaceYAMLJson(
-      kitspaceYAMLPath,
-    )
-    const finishedProcessing = await getIsProcessingDone(assetsPath)
+    const [
+      repo,
+      repoFiles,
+      [boardBomInfoExists, boardBomInfo],
+      [gerberInfoExists, gerberInfo],
+      [kitspaceYAMLExists, kitspaceYAML],
+      finishedProcessing,
+      hasIBOM,
+    ] = await Promise.all([
+      getRepo(repoFullname),
+      getDefaultBranchFiles(repoFullname),
+      getBoardBomInfo(assetsPath),
+      getBoardGerberInfo(assetsPath),
+      getKitspaceYAMLJson(kitspaceYAMLPath),
+      getIsProcessingDone(assetsPath),
+      hasInteractiveBom(assetsPath),
+    ])
 
     const projectKitspaceYAML = kitspaceYAML.multi[multiProjectName]
-    const { zipPath, width, height, layers } = gerberInfo
-    const zipUrl = `${assetsPath}/${zipPath}`
 
     const readmeFile = projectKitspaceYAML?.readme || findReadme(repoFiles)
     const renderedReadme = await renderReadme(repoFullname, readmeFile)
 
-    const hasIBOM = await hasInteractiveBom(assetsPath)
+    const { zipPath, width, height, layers } = gerberInfo
+    const zipUrl = `${assetsPath}/${zipPath}`
 
     return {
       props: {
