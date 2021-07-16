@@ -1,15 +1,18 @@
 import faker from 'faker'
 
 describe('Syncing a project behavior validation', () => {
-  const username = faker.name.firstName()
-  const email = faker.internet.email()
+  const username = faker.unique(faker.name.firstName)
+  const email = faker.unique(faker.internet.email)
   const password = '123456'
 
   const syncedRepoUrl = 'https://github.com/AbdulrhmnGhanem/light-test-repo'
   const repoName = 'light-test-repo'
 
   before(() => {
-    // visit home before running the tests, instead of using `wait`.
+    /*
+     * The purpose of this isn't actually visiting the homepage.
+     * Sometimes, the frontend has a slow startup time which results in a random failure.
+     */
     cy.visit('/')
   })
 
