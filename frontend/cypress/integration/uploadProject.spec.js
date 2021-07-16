@@ -3,8 +3,8 @@ import faker from 'faker'
 const updateProjectUrl = 'http://kitspace.test:3000'
 
 describe('Upload project', () => {
-  const username = faker.name.firstName()
-  const email = faker.internet.email()
+  const username = faker.unique(faker.name.firstName)
+  const email = faker.unique(faker.internet.email)
   const password = '123456'
 
   before(() => {
