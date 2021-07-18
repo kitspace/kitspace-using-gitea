@@ -1,4 +1,3 @@
-// TODO: this page became monolithic, it needs global refactoring.
 import React from 'react'
 
 import {
@@ -21,8 +20,11 @@ export const getServerSideProps = async ({ params, query, req }) => {
   const processorUrl = process.env.KITSPACE_PROCESSOR_URL
   // `repoFullname` is resolved by matching its name against the `page` dir.
   // Then it's used to access the repo by the Gitea API.
-  const repoFullname = `${params.username}/${params.projectName}`
-  const assetsPath = `${processorUrl}/files/${repoFullname}/HEAD`
+  const { multiProjectName, username, projectName } = params
+  const repoFullname = `${username}/${projectName}`
+
+  const kitspaceYAMLPath = `${processorUrl}/files/${repoFullname}/HEAD`
+  const assetsPath = `${processorUrl}/files/${repoFullname}/HEAD/${multiProjectName}`
 
   // The repo owner and collaborators can upload files.
   const hasUploadPermission = await canCommit(
@@ -44,12 +46,14 @@ export const getServerSideProps = async ({ params, query, req }) => {
       getDefaultBranchFiles(repoFullname),
       getBoardBomInfo(assetsPath),
       getBoardGerberInfo(assetsPath),
-      getKitspaceYAMLJson(assetsPath),
+      getKitspaceYAMLJson(kitspaceYAMLPath),
       getIsProcessingDone(assetsPath),
       hasInteractiveBom(assetsPath),
     ])
 
-    const readmeFile = kitspaceYAML?.readme || findReadme(repoFiles)
+    const projectKitspaceYAML = kitspaceYAML.multi[multiProjectName]
+
+    const readmeFile = projectKitspaceYAML?.readme || findReadme(repoFiles)
     const renderedReadme = await renderReadme(repoFullname, readmeFile)
 
     const { zipPath, width, height, layers } = gerberInfo
@@ -63,7 +67,7 @@ export const getServerSideProps = async ({ params, query, req }) => {
         hasUploadPermission,
         repoFiles,
         hasIBOM,
-        kitspaceYAML,
+        kitspaceYAML: projectKitspaceYAML,
         zipUrl,
         boardBomInfo,
         boardSpecs: { width, height, layers },
@@ -72,13 +76,13 @@ export const getServerSideProps = async ({ params, query, req }) => {
         // Whether the project were empty or not at the time of requesting the this page from the server.
         isEmpty: repo?.empty,
         user: params.username,
-        projectName: params.projectName,
+        projectName: multiProjectName,
         isNew: query.create === 'true',
         boardAssetsExist: gerberInfoExists && boardBomInfoExists,
         readmeExists: readmeFile !== '',
         kitspaceYAMLExists,
         finishedProcessing,
-        description: kitspaceYAML?.summary || repo?.description,
+        description: projectKitspaceYAML?.summary || repo?.description,
         url: repo?.original_url,
       },
     }
@@ -86,6 +90,5 @@ export const getServerSideProps = async ({ params, query, req }) => {
   return { notFound: true }
 }
 
-const ProjectPage = props => <SharedProjectPage {...props} />
-
-export default ProjectPage
+const MultiProjectPage = props => <SharedProjectPage {...props} />
+export default MultiProjectPage
