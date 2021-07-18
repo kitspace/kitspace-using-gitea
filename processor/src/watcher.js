@@ -80,6 +80,7 @@ async function processRepo(events, repoDir, gitDir) {
   await sync(gitDir, checkoutDir)
 
   const hash = await getGitHash(checkoutDir)
+
   const filesDir = path.join(DATA_DIR, 'files', name, hash)
 
   const kitspaceYamlJson = path.join(filesDir, 'kitspace-yaml.json')
@@ -132,8 +133,29 @@ async function getKitspaceYaml(checkoutDir) {
 }
 
 async function getGitHash(checkoutDir) {
-  const { stdout } = await exec(`cd '${checkoutDir}' && git rev-parse HEAD`)
-  return stdout.slice(0, -1)
+  return Promise.race([
+    _getGitHash(checkoutDir),
+    new Promise((_, reject) =>
+      setTimeout(() => reject('Getting git hash timed out'), 60_000),
+    ),
+  ])
+}
+
+async function _getGitHash(checkoutDir) {
+  const cmd = `cd '${checkoutDir}' && git rev-parse HEAD`
+  const tryGetHash = () =>
+    exec(cmd)
+      .then(({ stdout }) => stdout.slice(0, -1))
+      .catch(err => {
+        log.warning(err)
+        return null
+      })
+  let hash = await tryGetHash()
+  while (hash == null) {
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    hash = await tryGetHash()
+  }
+  return hash
 }
 
 function tryReadFile(filePath) {
@@ -167,3 +189,4 @@ async function sync(gitDir, checkoutDir) {
 }
 
 module.exports = { watch }
+
